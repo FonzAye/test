@@ -1,10 +1,11 @@
-const pool = require('../config/db');
+const { initializeDb } = require('../config/db');
 
 const registerUser = async (req, res) => {
   const { username, email, password_hash } = req.body;
   console.log("Received data:", { username, email, password_hash });
 
   try {
+    const pool = await initializeDb(); // Ensure we get a DB connection
     const result = await pool.query(
       'INSERT INTO Users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING *',
       [username, email, password_hash]
@@ -18,6 +19,7 @@ const registerUser = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
+    const pool = await initializeDb(); // Ensure we get a DB connection
     const result = await pool.query('SELECT * FROM Users');
     res.status(200).json(result.rows);
   } catch (error) {
