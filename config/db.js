@@ -9,7 +9,7 @@ const secretsManager = new AWS.SecretsManager();
 
 async function getDbCredentials() {
   try {
-    const data = await secretsManager.getSecretValue({ SecretId: "test" }).promise();
+    const data = await secretsManager.getSecretValue({ SecretId: "myDatabaseSecret" }).promise();
     return JSON.parse(data.SecretString);
   } catch (err) {
     console.error("Error fetching database secrets:", err);
