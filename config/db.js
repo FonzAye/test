@@ -1,24 +1,35 @@
-const AWS = require('aws-sdk');
 const { Pool } = require('pg');
 require('dotenv').config(); // Ensure environment variables are loaded
 
 // Configure AWS SDK
-AWS.config.update({ region: "eu-central-1" });
+const { SecretsManagerClient, GetSecretValueCommand } = require("@aws-sdk/client-secrets-manager");
 
-const secretsManager = new AWS.SecretsManager();
+const secret_name = "test";
 
-async function getDbCredentials() {
+const client = new SecretsManagerClient({
+  region: "eu-central-1",
+});
+
+const fetchSecret = async () => {
   try {
-    const data = await secretsManager.getSecretValue({ SecretId: "test" }).promise();
-    return JSON.parse(data.SecretString);
-  } catch (err) {
-    console.error("Error fetching database secrets:", err);
-    process.exit(1);
+    const response = await client.send(
+      new GetSecretValueCommand({
+        SecretId: secret_name,
+        VersionStage: "AWSCURRENT", // VersionStage defaults to AWSCURRENT if unspecified
+      })
+    );
+
+    return response.SecretString;
+  } catch (error) {
+    console.error("Error fetching secret:", error);
+    throw error; // Re-throw the error if needed
   }
-}
+};
+
+console.log("hello!");
 
 async function initializeDb() {
-  const dbConfig = await getDbCredentials();
+  const dbConfig = await fetchSecret();
 
   const pool = new Pool({
     user: dbConfig.DB_USER,
@@ -32,7 +43,6 @@ async function initializeDb() {
   console.log(dbConfig);
   return pool;
 }
-
 // const pool = new Pool({
 //   user: process.env.DB_USER,
 //   host: process.env.DB_HOST,
