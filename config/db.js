@@ -26,7 +26,8 @@ const fetchSecret = async () => {
 };
 
 async function initializeDb() {
-  const dbConfig = await fetchSecret();
+  const data = await fetchSecret();
+  const dbConfig = JSON.parse(data);
 
   const pool = new Pool({
     user: dbConfig.DB_USER,
@@ -37,7 +38,8 @@ async function initializeDb() {
     ssl: { rejectUnauthorized: false },
   });
 
-  console.log(dbConfig);
+  console.log("data: " + data);
+  console.log("Parsed dbConfig: " + dbConfig);
   return pool;
 }
 
