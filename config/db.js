@@ -1,5 +1,4 @@
 const { Pool } = require('pg');
-require('dotenv').config(); // Ensure environment variables are loaded
 
 // Configure AWS SDK
 const { SecretsManagerClient, GetSecretValueCommand } = require("@aws-sdk/client-secrets-manager");
@@ -26,8 +25,6 @@ const fetchSecret = async () => {
   }
 };
 
-console.log("hello!");
-
 async function initializeDb() {
   const dbConfig = await fetchSecret();
 
@@ -43,16 +40,6 @@ async function initializeDb() {
   console.log(dbConfig);
   return pool;
 }
-// const pool = new Pool({
-//   user: process.env.DB_USER,
-//   host: process.env.DB_HOST,
-//   database: process.env.DB_NAME,
-//   password: process.env.DB_PASS,
-//   port: process.env.DB_PORT || 5432,
-//   ssl: {
-//     rejectUnauthorized: false,
-//   },
-// });
 
 // Function to create tables if they don't exist
 const createTables = async (pool) => {
