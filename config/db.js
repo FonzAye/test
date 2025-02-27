@@ -109,6 +109,7 @@ const addExpense = async (pool, userId, amount, category, date, description) => 
 // Initialize DB and run setup
 (async () => {
   const pool = await initializeDb();
+  console.log("Starting DB connection")
 
   try {
     // Check connection
