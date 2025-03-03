@@ -25,22 +25,39 @@ const fetchSecret = async () => {
   }
 };
 
-async function initializeDb() {
-  const data = await fetchSecret();
-  const dbConfig = JSON.parse(data);
+async function initializeDb(retries = 10, delay = 5000) {
+  let attempt = 0;
+  let pool;
 
-  const pool = new Pool({
-    user: dbConfig.DB_USER,
-    host: dbConfig.DB_HOST,
-    database: dbConfig.DB_NAME,
-    password: dbConfig.DB_PASS,
-    port: dbConfig.DB_PORT,
-    ssl: { rejectUnauthorized: false },
-  });
+  while (attempt < retries) {
+    try {
+      console.log(`Attempt ${attempt + 1}: Fetching DB secrets...`);
+      const data = await fetchSecret();
+      const dbConfig = JSON.parse(data);
 
-  console.log("data: " + data);
-  console.log("Parsed dbConfig: " + dbConfig);
-  return pool;
+      pool = new Pool({
+        user: dbConfig.DB_USER,
+        host: dbConfig.DB_HOST,
+        database: dbConfig.DB_NAME,
+        password: dbConfig.DB_PASS,
+        port: dbConfig.DB_PORT,
+        ssl: { rejectUnauthorized: false },
+      });
+
+      // Test the connection
+      await pool.query("SELECT 1");
+      console.log("Database connected successfully!");
+      return pool;
+    } catch (err) {
+      attempt++;
+      console.error(`Database connection failed (attempt ${attempt}/${retries}). Retrying in ${delay / 1000} seconds...`, err);
+      if (attempt >= retries) {
+        console.error("All retries failed. Exiting...");
+        process.exit(1);
+      }
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
 }
 
 // Function to create tables if they don't exist
