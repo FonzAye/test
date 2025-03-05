@@ -28,4 +28,15 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, getAllUsers };
+const deleteAllUsers = async (req, res) => {
+  try {
+    const pool = await initializeDb(); // Ensure we get a DB connection
+    await pool.query('DELETE FROM Users'); // Delete all users
+    res.status(200).json({ message: 'All users deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error deleting users' });
+  }
+};
+
+module.exports = { registerUser, getAllUsers, deleteAllUsers };
